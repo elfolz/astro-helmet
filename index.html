@@ -21,25 +21,23 @@
 			section {
 				text-align: center;
 			}
+			img {
+				position: absolute;
+				top: 0;
+				left: 0;
+				z-index: -1;
+			}
 			video {
 				position: absolute;
 				top: 0;
 				left: 50%;
-				z-index: -1;
+				z-index: -2;
 				transform: translateX(-50%);
 				-webkit-mask-image: url("mask.png");
 				-webkit-mask-size: cover;
 				mask-image: url("mask.png");
 				mask-size: cover;
 				object-fit: fill;
-			}
-			canvas {
-				position: absolute;
-				top: 0;
-				left: 0;
-			}
-			canvas:not(.show) {
-				display: none;
 			}
 			footer {
 				display: flex;
@@ -112,12 +110,16 @@
 			}
 			document.querySelector('#sendPicture').onclick = () => {
 				document.querySelector('input[type=file]').click()
+				if (openedCamera) {
+					camera.srcObject?.getTracks()?.forEach(el => el.stop())
+					openedCamera = false
+				}
 			}
 			document.querySelector('#takePicture').onclick = () => {
 				if (openedCamera) {
 					refreshCanvas(camera)
 					document.querySelector('#takePicture').innerHTML = 'Abrir Camera'
-					camera.srcObject.getTracks().forEach(el => el.stop())
+					camera.srcObject?.getTracks()?.forEach(el => el.stop())
 					openedCamera = false
 				} else {
 					document.querySelector('#takePicture').innerHTML = 'Tirar foto'
@@ -143,14 +145,15 @@
 				context.clearRect(helmet.width*0.15, helmet.height-(helmet.height*0.25), helmet.width*0.09, helmet.height*0.25)
 				context.clearRect(helmet.width-(helmet.width*0.15)-(helmet.width*0.09), helmet.height-(helmet.height*0.25), helmet.width*0.09, helmet.height*0.25)
 				context.drawImage(helmet, 0, 0, helmet.width, helmet.height)
-				canvas.classList.add('show')
 			}
 			function openCamera() {
-				canvas.classList.remove('show')
+				context.clearRect(0, 0, canvas.width, canvas.height)
 				navigator.mediaDevices.getUserMedia({
 					audio: false,
 					video: {
-						facingMode: 'user'
+						facingMode: 'user',
+						width: camera.clientWidth,
+						height: camera.clientHeight
 					}
 				})
 				.then(stream => {
