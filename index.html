@@ -98,9 +98,9 @@
 				let link = document.createElement('a')
 				link.setAttribute('dowload', 'Astro-helmet')
 				link.href = canvas.toDataURL()
-				document.appendChild(link)
+				document.documentElement.appendChild(link)
 				link.click()
-				setTimeout(() => {document.removeChild(link), 100})
+				setTimeout(() => {document.documentElement.removeChild(link), 100})
 			}
 		</script>
 	</body>
