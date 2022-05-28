@@ -14,9 +14,30 @@
 				position: fixed;
 				top: 50%;
 				left: 50%;
+				width: fit-content;
+				height: fit-content;
 				transform: translate(-50%, -50%);
 			}
-			main footer {
+			section {
+				text-align: center;
+			}
+			video {
+				position: absolute;
+				top: 0;
+				left: 0;
+				z-index: -1;
+				-webkit-mask-box-image: url("/mask.png");
+				object-fit: fill;
+			}
+			canvas {
+				position: absolute;
+				top: 0;
+				left: 0;
+			}
+			canvas:not(.show) {
+				display: none;
+			}
+			footer {
 				display: flex;
 				justify-content: space-evenly;
 				align-items: center;
@@ -26,57 +47,77 @@
 				width: 128px;
 				height: 36px;
 				cursor: pointer;
-				border-radius: 8px;
+				border-radius: 4px;
 				border: none;
-				background-color: rgb(64,64,64);
+				background-color: #94959b;
 				color: #fff;
 				text-transform: uppercase;
 				transition: all 250ms ease-in-out;
 			}
 			button:hover {
-				background-color: rgb(128,128,128);
-			}
-			canvas {
-				margin: 2rem;
+				background-color: #b8b9c1;
 			}
 		</style>
 	</head>
 	<body>
 		<main>
-			<canvas title="Enviar imagem"></canvas>
+			<section>
+				<img id="helmet" src="helmet.png" >
+				<video id="camera"></video>
+				<canvas></canvas>
+			</section>
 			<footer>
-				<button id="changePicture">Mudar foto</button>
+				<button id="sendPicture">Enviar foto</button>
+				<button id="takePicture">Abrir camera</button>
 				<button id="downloadPicture">Baixar foto</button>
 			</footer>
-			<input type="file">
+			<input type="file" accept="image/*">
 		</main>
 		<script>
+			var openedCamera = false
+			const container = document.querySelector('section')
+			const camera = document.querySelector('#camera')
 			const profile = new Image()
 			profile.crossOrigin = 'anonymous'
-			const helmet = new Image()
+			const helmet = document.querySelector('#helmet')
 			helmet.crossOrigin = 'anonymous'
 			helmet.src = 'helmet.png'
 			const canvas = document.querySelector('canvas')
 			const context = canvas.getContext('2d')
 			const reader = new FileReader()
+			helmet.onload = () => {
+				container.style.width = helmet.naturalWidth
+				container.style.height = helmet.naturalHeight
+				canvas.width = helmet.naturalWidth
+				canvas.height = helmet.naturalHeight
+				camera.width = canvas.width
+				camera.height = canvas.height
+			}
 			profile.onload = () => {
 				let helmetSize = Math.min(helmet.width, helmet.height)
 				let profileSize = Math.min(profile.naturalWidth, profile.naturalHeight)
 				let ratio = helmetSize / profileSize
 				profile.width = profile.naturalWidth * ratio * 0.75
 				profile.height = profile.naturalHeight * ratio * 0.75
-				refreshCanvas()
-			}
-			helmet.onload = () => {
-				canvas.width = helmet.naturalWidth
-				canvas.height = helmet.naturalHeight
-				refreshCanvas()
+				refreshCanvas(profile)
 			}
 			reader.onload = e => {
 				profile.src = e.target.result
 			}
-			document.querySelector('#changePicture').onclick = () => {
+			document.querySelector('#sendPicture').onclick = () => {
 				document.querySelector('input[type=file]').click()
+			}
+			document.querySelector('#takePicture').onclick = () => {
+				if (openedCamera) {
+					refreshCanvas(camera)
+					document.querySelector('#takePicture').innerHTML = 'Abrir Camera'
+					camera.srcObject.getTracks().forEach(el => el.stop())
+					openedCamera = false
+				} else {
+					document.querySelector('#takePicture').innerHTML = 'Tirar foto'
+					openedCamera = true
+					openCamera()
+				}
 			}
 			document.querySelector('#downloadPicture').onclick = () => {
 				downloadPicture()
@@ -85,9 +126,9 @@
 				let picture = e.target.files[0]
 				if (picture) reader.readAsDataURL(picture)
 			}
-			function refreshCanvas() {
+			function refreshCanvas(src) {
 				context.clearRect(0, 0, canvas.width, canvas.height)
-				context.drawImage(profile, (helmet.width-profile.width)/2, (helmet.height-profile.height)/3, profile.width, profile.height)
+				context.drawImage(src, (helmet.width-src.width)/2, (helmet.height-src.height)/3, src.width, src.height)
 				context.clearRect(0, 0, helmet.width, 44)
 				context.clearRect(0, 0, 78, helmet.height)
 				context.clearRect(helmet.width-78, 0, 78, helmet.height)
@@ -96,6 +137,20 @@
 				context.clearRect(78, helmet.height-44-44, 44, 44)
 				context.clearRect(helmet.width-78-44, helmet.height-44-44, 44, 44)
 				context.drawImage(helmet, 0, 0, helmet.width, helmet.height)
+				canvas.classList.add('show')
+			}
+			function openCamera() {
+				canvas.classList.remove('show')
+				navigator.mediaDevices.getUserMedia({
+					audio: false,
+					video: {
+						facingMode: 'user'
+					}
+				})
+				.then(stream => {
+					camera.srcObject = stream
+					camera.play()
+				})
 			}
 			function downloadPicture() {
 				let link = document.createElement('a')
