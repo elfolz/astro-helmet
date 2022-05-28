@@ -87,10 +87,12 @@
 			const context = canvas.getContext('2d')
 			const reader = new FileReader()
 			helmet.onload = () => {
-				container.style.width = helmet.naturalWidth
-				container.style.height = helmet.naturalHeight
-				canvas.width = helmet.naturalWidth
-				canvas.height = helmet.naturalHeight
+				if (helmet.naturalWidth > window.innerWidth) helmet.width = window.innerWidth
+				if (helmet.naturalHeight > window.innerHeight) helmet.height = window.innerHeight
+				container.style.width = helmet.width
+				container.style.height = helmet.height
+				canvas.width = helmet.width
+				canvas.height = helmet.height
 				camera.width = Math.min(canvas.width, canvas.height)
 				camera.height = camera.width
 			}
@@ -130,13 +132,13 @@
 			function refreshCanvas(src) {
 				context.clearRect(0, 0, canvas.width, canvas.height)
 				context.drawImage(src, (helmet.width-src.width)/2, (helmet.height-src.height)/3, src.width, src.height)
-				context.clearRect(0, 0, helmet.width, 44)
-				context.clearRect(0, 0, 78, helmet.height)
-				context.clearRect(helmet.width-78, 0, 78, helmet.height)
-				context.clearRect(78, 44, 44, 44)
-				context.clearRect(helmet.width-78-44, 44, 44, 44)
-				context.clearRect(78, helmet.height-44-44, 44, 44)
-				context.clearRect(helmet.width-78-44, helmet.height-44-44, 44, 44)
+				context.clearRect(0, 0, helmet.width, helmet.height*0.09)
+				context.clearRect(0, 0, helmet.width*0.16, helmet.height)
+				context.clearRect(helmet.width-(helmet.width*0.16), 0, helmet.width*0.16, helmet.height)
+				context.clearRect(helmet.width*0.15, helmet.height*0.08, helmet.width*0.12, helmet.height*0.12)
+				context.clearRect(helmet.width-(helmet.width*0.15)-(helmet.width*0.11), helmet.height*0.08, helmet.width*0.12, helmet.height*0.12)
+				context.clearRect(helmet.width*0.15, helmet.height-(helmet.height*0.25), helmet.width*0.09, helmet.height*0.25)
+				context.clearRect(helmet.width-(helmet.width*0.15)-(helmet.width*0.09), helmet.height-(helmet.height*0.25), helmet.width*0.09, helmet.height*0.25)
 				context.drawImage(helmet, 0, 0, helmet.width, helmet.height)
 				canvas.classList.add('show')
 			}
