@@ -24,8 +24,9 @@
 			video {
 				position: absolute;
 				top: 0;
-				left: 0;
+				left: 50%;
 				z-index: -1;
+				transform: translateX(-50%);
 				-webkit-mask-box-image: url("mask.png");
 				object-fit: fill;
 			}
@@ -90,8 +91,8 @@
 				container.style.height = helmet.naturalHeight
 				canvas.width = helmet.naturalWidth
 				canvas.height = helmet.naturalHeight
-				camera.width = canvas.width
-				camera.height = canvas.height
+				camera.width = Math.min(canvas.width, canvas.height)
+				camera.height = camera.width
 			}
 			profile.onload = () => {
 				let helmetSize = Math.min(helmet.width, helmet.height)
